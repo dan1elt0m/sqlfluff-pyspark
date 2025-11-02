@@ -32,7 +32,7 @@ Add the following to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/danieltom/sqlfluff-pyspark
-    rev: v0.1.0  # or the latest tag
+    rev: v0.1.1  # or the latest tag
     hooks:
       - id: sqlfluff-pyspark-lint
       # Optional fix hook (will modify files). Normally run separately or in CI.
