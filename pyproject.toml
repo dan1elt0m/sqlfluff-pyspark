@@ -1,0 +1,27 @@
+[project]
+name = "sqlfluff-pyspark"
+version = "0.1.0"
+description = "Checks and fixes SQL code for PySpark SQL using SQLFluff."
+readme = "README.md"
+authors = [
+    { name = "Daniel Tom", email = "d.e.tom89@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "sqlfluff>=3",
+]
+
+[project.scripts]
+sqlfluff-pyspark = "sqlfluff_pyspark.lint:main"
+
+[build-system]
+requires = ["uv_build>=0.8.17,<0.9.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.3",
+]

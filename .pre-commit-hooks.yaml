@@ -1,0 +1,19 @@
+- id: sqlfluff-pyspark-lint
+  name: sqlfluff-pyspark lint spark.sql strings
+  entry: sqlfluff-pyspark
+  language: python
+  language_version: python3
+  types: [python]
+  pass_filenames: true
+  args: []
+  description: "Lint spark.sql string literals in Python files with sqlfluff"
+
+- id: sqlfluff-pyspark-fix
+  name: sqlfluff-pyspark fix spark.sql strings
+  entry: sqlfluff-pyspark
+  language: python
+  language_version: python3
+  types: [python]
+  pass_filenames: true
+  args: ["--fix"]
+  description: "Fix spark.sql string literals in Python files with sqlfluff"
