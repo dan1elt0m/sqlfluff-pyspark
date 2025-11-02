@@ -1,75 +1,107 @@
 name: release
+
 on:
-  workflow_dispatch: # Only manual trigger and only for the main branch
+  workflow_dispatch:
     branches:
-    - main
+      - main
     inputs:
       bump_level:
         type: choice
         description: Select bump level
         required: true
         options:
-        - patch
-        - minor
-        - major
+          - patch
+          - minor
+          - major
 
 permissions:
-  contents: write
-  id-token: write
+  contents: write   # allow pushing tags/commits
+  id-token: write   # for PyPI OIDC publish
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    environment: release       # needed for PyPI OIDC
+    environment: release
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        token: ${{ secrets.GIT_TOKEN_DANIEL}}
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0           # need full history for version tagging
+          persist-credentials: true # ensure GITHUB_TOKEN is retained for pushes
+          # If you really need a personal access token (PAT) with wider scopes, set a secret
+          # and uncomment this line; otherwise rely on GITHUB_TOKEN.
+          # token: ${{ secrets.GIT_TOKEN_DANIEL }}
 
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v3
-      with:
-        python-version: 3.12
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-    - name: Install UV
-      run: |
-         curl -LsSf https://astral.sh/uv/install.sh | sh
+      - name: Install UV
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "${HOME}/.local/bin" >> $GITHUB_PATH
 
-    - name: Build and publish
-      run: |
-        set -euv
-        
-        BUMP_LEVEL=${{ github.event.inputs.bump_level }}
-        echo "bump level: ${BUMP_LEVEL}"
-        git config --local user.email "Bumpversion"
-        git config --local user.name "Bumpversion"
+      - name: Show UV version
+        run: uv --version
 
-        # Version bump
-        uv version --bump ${BUMP_LEVEL}
-        NEW_VERSION=$(uv version --short)
-        echo ${NEW_VERSION}
-        git add pyproject.toml uv.lock
-        git commit -m "Bump version to ${NEW_VERSION}"
-        git tag "v${NEW_VERSION}"
+      - name: Install project (dev) & run tests
+        run: |
+          set -eux
+          uv sync --group dev
+          python -m pytest -q
 
-        git push -f  
-        git push --tags -f
-        
-        uv build
-        
-        echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+      - name: Version bump, tag & push
+        run: |
+          set -eux
+          BUMP_LEVEL='${{ github.event.inputs.bump_level }}'
+          echo "Requested bump level: ${BUMP_LEVEL}"
 
-    - uses: pypa/gh-action-pypi-publish@release/v1    # publish
-    - name: Create Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ env.NEW_VERSION }}
-        release_name: v${{ env.NEW_VERSION }}
-        body: |
-          pypi package: https://pypi.org/project/dltlint/${{ env.NEW_VERSION }}/
-        draft: false
-        prerelease: false
+          git config user.email "github-actions@users.noreply.github.com"
+          git config user.name "github-actions"
+
+          uv version --bump ${BUMP_LEVEL}
+          NEW_VERSION=$(uv version --short)
+          echo "New version: ${NEW_VERSION}"
+
+          git add pyproject.toml uv.lock || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit after bump; exiting." >&2
+            exit 1
+          fi
+
+          git commit -m "Bump version to ${NEW_VERSION}" || true
+          git tag "v${NEW_VERSION}" || true
+
+          # Push commit and tag using GITHUB_TOKEN
+          git push origin HEAD:main
+          git push origin --tags
+
+          echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+
+      - name: Build distribution
+        run: |
+          set -eux
+          uv build
+          ls -l dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.NEW_VERSION }}
+          release_name: v${{ env.NEW_VERSION }}
+          body: |
+            PyPI package: https://pypi.org/project/sqlfluff-pyspark/${{ env.NEW_VERSION }}/
+          draft: false
+          prerelease: false
+
+    outputs:
+      version: ${{ env.NEW_VERSION }}
