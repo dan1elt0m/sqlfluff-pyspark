@@ -1,6 +1,6 @@
 [project]
 name = "sqlfluff-pyspark"
-version = "0.1.0"
+version = "0.1.1"
 description = "Checks and fixes SQL code for PySpark SQL using SQLFluff."
 readme = "README.md"
 authors = [
