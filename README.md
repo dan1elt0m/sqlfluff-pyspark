@@ -31,7 +31,7 @@ Add the following to your `.pre-commit-config.yaml`:
 
 ```yaml
 repos:
-  - repo: https://github.com/danieltom/sqlfluff-pyspark
+  - repo: https://github.com/dan1elt0m/sqlfluff-pyspark
     rev: v0.1.1  # or the latest tag
     hooks:
       - id: sqlfluff-pyspark-lint
