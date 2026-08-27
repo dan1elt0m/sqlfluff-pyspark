@@ -32,5 +32,5 @@ jobs:
           pip install pre-commit
           pre-commit run --all-files || true
       - name: Run tests
-        run: python -m pytest -q
+        run: uv run pytest -q
 
