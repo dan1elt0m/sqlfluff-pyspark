@@ -25,14 +25,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0           # need full history for version tagging
           # admin PAT: bypasses the required status checks on main for the bump push
           token: ${{ secrets.GIT_TOKEN_DANIEL }}
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
 
