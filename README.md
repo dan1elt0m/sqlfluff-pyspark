@@ -1,5 +1,12 @@
 # sqlfluff-pyspark
 
+> **This repository is archived.** sqlfluff-pyspark has moved into
+> [godatadriven/databricks-validator](https://github.com/godatadriven/databricks-validator),
+> which merges it with databricks-dashboard-validator. The `sqlfluff-pyspark` command and all
+> pre-commit hook ids keep working there; see its
+> [Migrating](https://github.com/godatadriven/databricks-validator#migrating) section.
+> No further releases will be made from this repository.
+
 Lint and optionally fix SQL embedded in `spark.sql(...)` calls using [SQLFluff](https://github.com/sqlfluff/sqlfluff).
 
 ## Installation
